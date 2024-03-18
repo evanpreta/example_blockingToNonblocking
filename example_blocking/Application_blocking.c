@@ -97,16 +97,19 @@ void Application_loop(Application* app, HAL* hal)
 {
     static bool pause = false;
 
+    static int frameIndex = 0;
+    static int frameOffset = 0;
+
     // LED1 is toggled whenever Launchpad S1 is tapped (goes from released to pressed)
     // This is based on an FSM for push-button as well as a debouncing FSM
     if (Button_isTapped(&hal->launchpadS1)) {
-        LED_toggle(&hal->launchpadLED1);
+        LED_toggle(&hal->launchpadLED1);  // D from class notes
         pause = !pause;
     }
 
     // Turn on the Boosterpack RGB Red LED (LBR) ONLY WHEN LB2 is pressed
     // This is a simple logic which has no memory
-    if (Button_isPressed(&hal->launchpadS2))
+    if (Button_isPressed(&hal->launchpadS2))  // B from class notes
     {
         LED_turnOn(&hal->boosterpackBlue);
     }
@@ -116,7 +119,7 @@ void Application_loop(Application* app, HAL* hal)
     }
 
     // Toggle the RGB Green LED on Launchpad (LLG) when the timer expires
-    if (SWTimer_expired(&app->Launchpad_LED2_blinkingTimer))
+    if (SWTimer_expired(&app->Launchpad_LED2_blinkingTimer))  // C from class notes
     {
         LED_toggle(&hal->launchpadLED2Green);
         SWTimer_start(&app->Launchpad_LED2_blinkingTimer);
@@ -126,24 +129,25 @@ void Application_loop(Application* app, HAL* hal)
     unsigned int r, g, b;
     r = 25; // red color is kept constant
 
-    if (!pause) {
+    if (!pause) {  // A from class notes
 
-        int frameIndex = 0;
-        int frameOffset = 0;
 
-        for (frameOffset =0; frameOffset < 128; frameOffset++)
-        {
-            for (frameIndex = 0; frameIndex<128; frameIndex++)
-            {
-                // gradually increase green and reduce blue
-                g = frameIndex*2;
-                b = 254 - g;
+        // gradually increase green and reduce blue
+        g = frameIndex*2;
+        b = 254 - g;
 
-                Graphics_setForegroundColor(&app->gfx.context, colormix(r,g,b));
-                Graphics_drawLineH(&app->gfx.context, 0, 127, (frameIndex+frameOffset)%128);
+        Graphics_setForegroundColor(&app->gfx.context, colormix(r,g,b));
+        Graphics_drawLineH(&app->gfx.context, 0, 127, (frameIndex+frameOffset)%128);
+
+        frameIndex++;
+        if (frameIndex == 128){
+            frameIndex = 0;
+            frameOffset++;
+            if (frameOffset == 128){
+                frameOffset = 0;
             }
-
         }
+
 
     }
 }
